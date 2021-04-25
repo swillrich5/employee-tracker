@@ -47,6 +47,7 @@ const runTracker = () => {
         'Add an Employee Role',
         'Add a Department',
         'Update Employee Roles',
+        'Total Utilized Budget By Department',
         'EXIT'
       ],
     })
@@ -86,6 +87,10 @@ const runTracker = () => {
   
         case 'Update Employee Roles':
           updateEmployeeRoles();
+          break;
+
+        case 'Total Utilized Budget By Department':
+          budgetByDepartment();
           break;
 
           case 'EXIT':
@@ -153,7 +158,7 @@ const viewEmployeesByDept = () => {
       query += 'FROM employees e JOIN roles r ON e.role_id = r.role_id ';
       query += 'JOIN departments d ON d.department_id = r.department_id ';
       query += 'LEFT JOIN employees m ON m.employee_id = e.manager_id ';
-      query += 'WHERE m.employee_name = ?';
+      query += 'WHERE d.department_name = ?';
       connection.query(query, answer.deptChoice, (err, res) => {
         if (err) console.log(err);
         console.log("\n");            
@@ -324,7 +329,7 @@ const viewDepartments = () => {
 
 
 const viewRoles = () => {
-  let sql = 'SELECT title TITLE, role_id "ROLE ID", d.department_name "DEPARTMENT NAME"'; 
+  let sql = 'SELECT title TITLE, salary SALARY, role_id "ROLE ID", d.department_name "DEPARTMENT NAME"'; 
   sql += 'FROM roles r '
   sql += 'JOIN departments d ON d.department_id = r.department_id ';
   sql += 'ORDER BY r.department_id, r.title';
@@ -415,10 +420,12 @@ const addRoles = () => {
   });
 }
 
+
 // ---------------------------------------------------------------
 
+
 const updateEmployeeRoles = () => {
-  let sql = 'SELECT title, role_id, salary, department_id '; 
+  let sql = 'SELECT DISTINCT title, role_id, salary, department_id '; 
   sql += 'FROM roles '
   // sql += 'JOIN departments d ON d.department_id = r.department_id ';
   sql += 'ORDER BY department_id, title';
@@ -472,6 +479,40 @@ const updateEmployeeRoles = () => {
         }
         runTracker();
       });
+    });
+  });
+}
+
+
+// ---------------------------------------------------------------
+
+
+const budgetByDepartment = () => {
+  let sql = 'SELECT d.department_name DEPARTMENT, LPAD(FORMAT(SUM(r.salary), 2), 10, " ") "DEPT SALARY" ';
+  sql += 'FROM roles r ';
+  sql += 'JOIN departments d ON r.department_id = d.department_id ';
+  sql += 'JOIN employees e ON r.role_id = e.role_id ';
+  sql += 'GROUP BY department ';
+  sql += 'ORDER BY department ';
+  connection.query(sql, (err, res) => {
+    if (err) {
+      console.log(err);
+    }
+    else {
+      console.log("\n");
+      console.table(res);
+    }
+    let query = 'SELECT LPAD(FORMAT(SUM(r.salary), 2), 12, " ") "TOTAL SALARY" FROM roles r ';
+    query += 'JOIN departments d ON r.department_id = d.department_id ';
+    query += 'JOIN employees e ON e.role_id = r.role_id';
+    connection.query(query, (err, res) => {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        console.table(res);
+      } 
+      runTracker();
     });
   });
 }
