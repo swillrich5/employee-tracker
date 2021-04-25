@@ -138,8 +138,6 @@ const viewEmployeesByDept = () => {
   connection.query(departmentQuery, (err, res) => {
     if (err) console.log(err);
     const depts = res.map(({ department_name }) => department_name);
-    // const depts = Object.values(res);
-    console.log(depts);
     inquirer
     .prompt({
       name: 'deptChoice',
@@ -156,8 +154,6 @@ const viewEmployeesByDept = () => {
       query += 'JOIN departments d ON d.department_id = r.department_id ';
       query += 'LEFT JOIN employees m ON m.employee_id = e.manager_id ';
       query += 'WHERE m.employee_name = ?';
-      // query += 'ORDER BY d.department_name';
-      console.log(answer.deptChoice);
       connection.query(query, answer.deptChoice, (err, res) => {
         if (err) console.log(err);
         console.log("\n");            
@@ -177,7 +173,6 @@ const viewEmployeesByManager = () => {
   connection.query(managerQuery, (err, res) => {
     if (err) console.log(err);
     const managers = res.map(({ manager_name }) => manager_name);
-    console.log(managers);
     inquirer
     .prompt({
       name: 'managerChoice',
@@ -194,8 +189,6 @@ const viewEmployeesByManager = () => {
       query += 'JOIN departments d ON d.department_id = r.department_id ';
       query += 'LEFT JOIN employees m ON m.employee_id = e.manager_id ';
       query += 'WHERE CONCAT(m.first_name, " ", m.last_name) = ?';
-      // query += 'ORDER BY d.department_name';
-      console.log(answer.managerChoice);
       connection.query(query, answer.managerChoice, (err, res) => {
         if (err) console.log(err);
         console.log("\n");            
@@ -216,8 +209,6 @@ const addEmployee = () => {
     if (err) console.log(err);
     const departments = res;
     const departmentNames = departments.map(({ department_name, department_id }) => department_name);
-    console.log(departmentNames);
-
     inquirer
     .prompt([{
       name: 'firstName',
@@ -243,7 +234,6 @@ const addEmployee = () => {
       var deptIndex = departments.findIndex(function (dept) {
         return dept.department_name === answer.department;
       });
-      console.log(deptIndex);
       const deptId = departments[deptIndex].department_id;
       let roleQuery = 'SELECT title, role_id FROM roles WHERE department_id = ?';
       connection.query(roleQuery, deptId, (err, res) => {
@@ -285,10 +275,8 @@ const addEmployee = () => {
             })
             .then((answer) => {  
               let managerId = -1;
-              console.log(answer.managerChoice);
               if (answer.managerChoice == 'No Manager') {
                 managerId = null;
-                console.log("ManagerID = " + managerId);
               } else {
                 managers.forEach(({ manager_name, employee_id }) => {
                   if (manager_name === answer.managerChoice) {
@@ -299,7 +287,6 @@ const addEmployee = () => {
               var sql = "INSERT INTO employees (first_name, last_name, role_id, manager_id) ";
               sql += "VALUES (?)";
               values = [firstName, lastName, roleId, managerId];
-              console.log(sql);
               connection.query(sql, [values], (err, res) => {
                 if (err) {
                   console.log(err);
@@ -326,7 +313,6 @@ const viewDepartments = () => {
   connection.query(departmentQuery, (err, res) => {
     if (err) console.log(err);
     const departments = res;
-    // const departmentNames = departments.map(({ department_name, department_id }) => department_name);
     console.log("\n\n");
     console.table(departments);
     runTracker();
@@ -432,5 +418,60 @@ const addRoles = () => {
 // ---------------------------------------------------------------
 
 const updateEmployeeRoles = () => {
-  
+  let sql = 'SELECT title, role_id, salary, department_id '; 
+  sql += 'FROM roles '
+  // sql += 'JOIN departments d ON d.department_id = r.department_id ';
+  sql += 'ORDER BY department_id, title';
+  connection.query(sql, (err, res) => {
+    if (err) console.log(err);
+    let roles = res;
+    const roleNames = roles.map(({ title, role_id, salary, department_id }) => title);
+    inquirer
+    .prompt([{
+      name: 'roleToUpdate',   // need department to narrow down list of roles
+      type: 'rawlist',
+      message: 'Which role do you wish to update:',
+      choices: roleNames,
+    },
+    {
+      name: 'newTitle',
+      type: 'input',
+      message: 'Enter New Title (press Enter for no change): ',
+    },
+    {
+      name: 'newSalary',
+      type: 'input',
+      message: 'Enter New Salary (No commas - press Enter for no change): ',
+    }
+    ])
+    .then((answers) => { 
+      let newTitle = "";
+      let newSalary = 0;
+      let roleId = -1;
+      roles.forEach(({ title, role_id, salary, department_id  }) => {
+        if (answers.roleToUpdate == title) {
+          newTitle = title;
+          newSalary = salary;
+          roleId = role_id;
+        }
+      });  
+      if (answers.newSalary !== "") {
+        newSalary = answers.newSalary;
+      }
+      if (answers.newTitle !== ""){
+        newTitle = answers.newTitle;
+      }
+      let sql = "UPDATE roles SET title = ?, salary = ? ";
+      sql += "WHERE role_id = ?";
+      values = [newTitle, newSalary, roleId];
+      connection.query(sql, [newTitle, newSalary, roleId], (err, res) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("\nRole: " + newTitle + " successfully Update. Rows Updated: " + res.affectedRows + "\n");
+        }
+        runTracker();
+      });
+    });
+  });
 }
