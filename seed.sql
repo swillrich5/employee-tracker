@@ -16,7 +16,10 @@ VALUES ("Human Resources Manager", 100000, 1),
 ("Webmaster", 75000.00, 3),
 ("Chief Legal Counsel", 200000.00, 4),
 ("Associate Legal Counsel", 150000.00, 4),
-("Legal Assistant", 75000, 4);
+("Legal Assistant", 75000, 4),
+("Quality Assurance Analyst", 80000.00, 3),
+("Project Manager", 90000, 3),
+("Human Resources Analyst", 75000, 1);
 
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
@@ -33,8 +36,11 @@ VALUES ("Natasha", "Romanov", 1, NULL),
 ("Everett", "Ross", 10, 10),
 ("Matthew", "Murdock", 10, 10),
 ("Jerry", "McLeod", 11, 10),
-("Justin", "Hammer", 11, 10);
-
+("Justin", "Hammer", 11, 10),
+("Clint", "Barton",  12, 5),
+("Carol", "Danvers", 13, 5),
+("James", "Howlett",14, 1),
+("Charles", "Xavier", 3, 2);
 
 SELECT departments.department_name, employees.first_name, employees.last_name, roles.title, roles.salary, employees.manager_id
 FROM departments d, roles r, employees e
@@ -56,4 +62,8 @@ ON d.department_id = r.department_id
 ORDER BY d.department_name;
 
 
-
+SELECT CONCAT(m.first_name, " ", m.last_name) as manager_name, m.employee_id 
+FROM employees m 
+JOIN roles r ON m.role_id = r.role_id
+JOIN departments d ON r.department_id = d.department_id
+JOIN employees e ON e.manager_id = m.employee_id;
