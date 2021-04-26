@@ -1,7 +1,8 @@
 const mysql = require('mysql');
 const conTable = require('console.table');
 const inquirer = require('inquirer');
-const RawListPrompt = require('inquirer/lib/prompts/rawlist');
+const logo = require('asciiart-logo');
+const config = require('./package.json');
 
 const connection = mysql.createConnection({
   host: 'localhost',
@@ -26,6 +27,29 @@ connection.connect((err) => {
   console.log(`connected as id ${connection.threadId}`);
   runTracker();
 });
+
+
+// ---------------------------------------------------------------
+
+
+
+// display the employee-tracker splash screen
+  console.log(
+    logo({
+        name: 'employee tracker',
+        font: 'Standard',
+        lineChars: 10,
+        padding: 2,
+        margin: 3,
+        borderColor: 'bold-green',
+        logoColor: 'bold-green',
+        textColor: 'green',
+    })
+    .emptyLine()
+    .right('version 1.0')
+    .emptyLine()
+    .render()
+  );
 
 
 // ---------------------------------------------------------------
@@ -327,12 +351,11 @@ const viewDepartments = () => {
 
 // ---------------------------------------------------------------
 
-
 const viewRoles = () => {
-  let sql = 'SELECT title TITLE, salary SALARY, role_id "ROLE ID", d.department_name "DEPARTMENT NAME"'; 
+  let sql = 'SELECT title TITLE, LPAD(FORMAT(salary, 2), 10, " ") SALARY, role_id "ROLE ID", d.department_name "DEPARTMENT NAME"'; 
   sql += 'FROM roles r '
   sql += 'JOIN departments d ON d.department_id = r.department_id ';
-  sql += 'ORDER BY r.department_id, r.title';
+  sql += 'ORDER BY d.department_name, r.title';
   connection.query(sql, (err, res) => {
     if (err) console.log(err);
     console.log("\n");            

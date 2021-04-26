@@ -4,6 +4,7 @@
   "description": "",
   "main": "employee-tracker.js",
   "dependencies": {
+    "asciiart-logo": "^0.2.6",
     "console.table": "^0.10.0",
     "inquirer": "^8.0.0",
     "mysql": "^2.18.1"

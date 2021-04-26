@@ -42,28 +42,3 @@ VALUES ("Natasha", "Romanov", 1, NULL),
 ("James", "Howlett",14, 1),
 ("Charles", "Xavier", 3, 2);
 
-SELECT departments.department_name, employees.first_name, employees.last_name, roles.title, roles.salary, employees.manager_id
-FROM departments d, roles r, employees e
-JOIN departments ON (departments.department_id = roles.department_id and 
-ON departments.department_id = roles.department_id
-JOIN 
-
--- View all employees
-SELECT * from employees
-order by role_id;
-
--- View all employees by department
-SELECT e.first_name, e.last_name, d.department_name
-FROM employees e
-JOIN roles r 
-ON e.role_id = r.role_id
-JOIN departments d 
-ON d.department_id = r.department_id
-ORDER BY d.department_name;
-
-
-SELECT CONCAT(m.first_name, " ", m.last_name) as manager_name, m.employee_id 
-FROM employees m 
-JOIN roles r ON m.role_id = r.role_id
-JOIN departments d ON r.department_id = d.department_id
-JOIN employees e ON e.manager_id = m.employee_id;
