@@ -8,36 +8,20 @@ employee-tracker is an application that allows an organization to manage its emp
 
 ## Walkthrough Videos
 
-Because of the number of functions in employee-tracker, videos for each individual function have been created.  This allows the user to quickly find instructions on the functions they're interested in without having to either watch or search through one long video.
-
-### Startup and 1) View All Employees
+Because of the number of functions in employee-tracker, the functionality has been divided into three separate walkthrough videos:
 
 
-### 2) View All Employees by Department
+ * Startup, View All Employees, View All Employees by Department, and View All Employees by Manager
 
+    https://drive.google.com/file/d/1vf4IM1MtJtthuBVcyjt2Cw_9jXybPa2-/view?usp=sharing
 
-### 3) View All Employees by Manager
+ * View Employee Roles, View All Departments, and Add an Employee
 
+     https://drive.google.com/file/d/1OKC0I86XUpkfnE71M3HPCDAEAkKK2b63/view?usp=sharing
 
-### 4) View Employee Roles
+ * Add an Employee Role (Job Title and Salary), Add a Department, Update Employee Roles, and Total Utilized Budget by Department
 
-
-### 5) View All Departments
-
-
-### 6) Add an Employee
-
-
-### 7) Add an Employee Role (Job Title and Salary)
-
-
-### 8) Add a Department
-
-
-### 9) Update Employee Roles
-
-
-### 10) Total Utilized Budget by Department
+     https://drive.google.com/file/d/1QRjVqVm4JksYiwu-rDWN4eT_9Vaotawf/view?usp=sharing
 
 ---
 

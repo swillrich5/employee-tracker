@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
   // Your port; if not 3306
   port: 3306,
 
-  // Your username
+  // username
   user: 'root',
 
   // Be sure to update with your own MySQL password!
@@ -22,6 +22,7 @@ const connection = mysql.createConnection({
 // ---------------------------------------------------------------
 
 
+// initial connection to the database
 connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id ${connection.threadId}`);
@@ -55,6 +56,8 @@ connection.connect((err) => {
 // ---------------------------------------------------------------
 
 
+// this function drives the application.  the case statement uses data 
+// supplied by inquired from the user to pick an employee-tracker feature
 const runTracker = () => {
   inquirer
     .prompt({
@@ -139,6 +142,7 @@ const runTracker = () => {
 // ---------------------------------------------------------------
 
 
+// view all of the employees in the organization sorted by department
 const viewEmployees = () => {
   let query = 'SELECT e.first_name "FIRST NAME", e.last_name "LAST NAME", ';
   query += 'd.department_name DEPARTMENT, r.title TITLE, ';
@@ -161,8 +165,8 @@ const viewEmployees = () => {
 // ---------------------------------------------------------------
 
 
+// list all employees in a particular department
 const viewEmployeesByDept = () => {
-
   let departmentQuery = 'SELECT department_name FROM departments';
   connection.query(departmentQuery, (err, res) => {
     if (err) console.log(err);
@@ -196,7 +200,7 @@ const viewEmployeesByDept = () => {
 
 // ---------------------------------------------------------------
 
-
+// list employees reporting to a specific manager
 const viewEmployeesByManager = () => {
   let managerQuery = 'SELECT CONCAT(m.first_name, " ", m.last_name) as manager_name FROM employees m WHERE m.employee_id IN (SELECT manager_id FROM employees);';
   connection.query(managerQuery, (err, res) => {
@@ -216,7 +220,7 @@ const viewEmployeesByManager = () => {
       query += 'CONCAT(m.first_name, " ", m.last_name) MANAGER ';
       query += 'FROM employees e JOIN roles r ON e.role_id = r.role_id ';
       query += 'JOIN departments d ON d.department_id = r.department_id ';
-      query += 'LEFT JOIN employees m ON m.employee_id = e.manager_id ';
+      query += 'JOIN employees m ON m.employee_id = e.manager_id ';
       query += 'WHERE CONCAT(m.first_name, " ", m.last_name) = ?';
       connection.query(query, answer.managerChoice, (err, res) => {
         if (err) console.log(err);
@@ -231,7 +235,7 @@ const viewEmployeesByManager = () => {
 
 // ---------------------------------------------------------------
 
-
+// add a new employee to the database
 const addEmployee = () => {
   const departmentQuery = 'SELECT department_name, department_id FROM departments ORDER by department_name';
   connection.query(departmentQuery, (err, res) => {
@@ -252,7 +256,7 @@ const addEmployee = () => {
     {
       name: 'department',   // need department to narrow down list of roles
       type: 'rawlist',
-      message: 'Employee Department',
+      message: 'Employee Department:',
       choices: departmentNames,
     }])
     .then((answer) => {
@@ -273,7 +277,7 @@ const addEmployee = () => {
         .prompt({
           name: 'titleChoice',
           type: 'rawlist',
-          message: 'Please choose a title',
+          message: 'Please choose a title:',
           choices: titleNames,
         })
         .then((answer) => {        
@@ -299,7 +303,7 @@ const addEmployee = () => {
             .prompt({
               name: 'managerChoice',
               type: 'rawlist',
-              message: 'Please choose a manager',
+              message: 'Please choose a manager:',
               choices: managerNames,
             })
             .then((answer) => {  
@@ -337,6 +341,7 @@ const addEmployee = () => {
 // ---------------------------------------------------------------
 
 
+// view a list of all the departments in the organization
 const viewDepartments = () => {
   const departmentQuery = 'SELECT department_name "DEPARTMENT NAME", department_id "DEPARTMENT ID" FROM departments ORDER by department_name';
   connection.query(departmentQuery, (err, res) => {
@@ -351,6 +356,9 @@ const viewDepartments = () => {
 
 // ---------------------------------------------------------------
 
+
+// view a listing of all of the employee postions (roles) in the
+// organization
 const viewRoles = () => {
   let sql = 'SELECT title TITLE, LPAD(FORMAT(salary, 2), 10, " ") SALARY, role_id "ROLE ID", d.department_name "DEPARTMENT NAME"'; 
   sql += 'FROM roles r '
@@ -368,12 +376,13 @@ const viewRoles = () => {
 // ---------------------------------------------------------------
 
 
+// add a department to the organization
 const addDepartment = () => {
   inquirer
   .prompt({
     name: 'departmentName',
     type: 'input',
-    message: 'Please enter the new department\'s name',
+    message: 'Please enter the new department\'s name:',
   })
   .then((answer) => {
     var sql = "INSERT INTO departments (department_name) ";
@@ -394,6 +403,7 @@ const addDepartment = () => {
 // ---------------------------------------------------------------
 
 
+// add a new role (postion) to a department
 const addRoles = () => {
   const departmentQuery = 'SELECT department_name, department_id FROM departments ORDER by department_name';
   connection.query(departmentQuery, (err, res) => {
@@ -446,7 +456,7 @@ const addRoles = () => {
 
 // ---------------------------------------------------------------
 
-
+// update a postion's (role's) title and/or salary
 const updateEmployeeRoles = () => {
   let sql = 'SELECT DISTINCT title, role_id, salary, department_id '; 
   sql += 'FROM roles '
@@ -498,7 +508,7 @@ const updateEmployeeRoles = () => {
         if (err) {
           console.log(err);
         } else {
-          console.log("\nRole: " + newTitle + " successfully Update. Rows Updated: " + res.affectedRows + "\n");
+          console.log("\nRole: " + newTitle + " successfully Updated. Rows Updated: " + res.affectedRows + "\n");
         }
         runTracker();
       });
@@ -510,8 +520,10 @@ const updateEmployeeRoles = () => {
 // ---------------------------------------------------------------
 
 
+// list the budget for each department, including a grand total for
+// the organization
 const budgetByDepartment = () => {
-  let sql = 'SELECT d.department_name DEPARTMENT, LPAD(FORMAT(SUM(r.salary), 2), 10, " ") "DEPT SALARY" ';
+  let sql = 'SELECT d.department_name DEPARTMENT, LPAD(FORMAT(SUM(IFNULL(r.salary, 0)), 2), 10, " ") "DEPT SALARY" ';
   sql += 'FROM roles r ';
   sql += 'JOIN departments d ON r.department_id = d.department_id ';
   sql += 'JOIN employees e ON r.role_id = e.role_id ';
